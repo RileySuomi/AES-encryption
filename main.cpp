@@ -57,7 +57,7 @@ uint8_t  AESMaster(uint8_t input) {
     
 }
 
-void createBlocks(queue<vector<uint8_t> > &blockQueue, string input) {
+void createBlocks(vector<vector<uint8_t> > &blockQueue, string input) {
     const int blockSize = 16;
     int blockStart = 0;
     cout << input.substr(16,31) << std::endl;
@@ -70,7 +70,7 @@ void createBlocks(queue<vector<uint8_t> > &blockQueue, string input) {
        int diff = i - blockStart;
         if (i - blockStart == blockSize - 1 || i == input.length() - 1) {
             string currentBlock = input.substr(blockStart, blockSize);
-            blockQueue.push(vector<uint8_t>(currentBlock.begin(), currentBlock.end()));
+            blockQueue.push_back(vector<uint8_t>(currentBlock.begin(), currentBlock.end()));
             cout << i - blockStart << std::endl;
             blockStart = i + 1;
         }
@@ -78,11 +78,42 @@ void createBlocks(queue<vector<uint8_t> > &blockQueue, string input) {
 }
 
 
+/*
+    Helper function places each byte in a block into a 4x4 matrix
+    to prep it for the bytesub step. 
+*/
+void blockToMatrix(vector<vector<uint8_t>> block,  uint8_t output[4][4]) {
+
+    /*
+        Iterate through each block
+    */
+    for (int i = 0; i < block.size(); i++) {
+        /*
+            Iterate through every byte in each block
+        */
+       vector<uint8_t> currentBlock = block[i];
+        
+        for (int j = 0; j < 16; j++) {
+            int x = i / 4;
+            int y = j % 4;
+
+            output[x][y] = currentBlock[j];
+        }
+    }
+
+    cout << "test" << std::endl;
+
+}
+
+
 int main() {
     // dummy string for testing change to file io later
     string message = "Born in Seattle, Washington, Hendrix began playing guitar at age 15. In 1961, he enlisted in the US Army, but was discharged the following year. Soon afterward, he moved to Clarksville, then Nashville, Tennessee, and began playing gigs on the chitlin' circuit, earning a place in the Isley Brothers' backing band and later with Little Richard, with whom he continued to work through mid-1965. He then played with Curtis Knight and the Squires.";
-    queue<vector<uint8_t> > messageBlocks;
+    uint8_t blockBytes[4][4];
+    vector<vector<uint8_t> > messageBlocks;
+    
     createBlocks(messageBlocks, message);
+    blockToMatrix(messageBlocks, blockBytes);
     // vector<uint8_t> test = messageBlocks.pop();
     // cout << test << std::endl;
     cout << "test" << std::endl;
