@@ -20,11 +20,10 @@ void DisplayMenu() {
 // ask user for file path 
 string GetFilePath() {
 
-
     string file;
     cout << "Enter file path: ";
     cin >> file;
-    cout << "Debug: File path entered: " << file << endl;
+    //cout << "Debug: File path entered: " << file << endl;
     return file;
 }
 
