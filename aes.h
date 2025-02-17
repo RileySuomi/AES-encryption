@@ -1,6 +1,6 @@
 
-#ifndef AES_H
-#define AES_H
+#ifndef AES_H_
+#define AES_H_
 
 #include <array>
 #include <vector>
@@ -23,7 +23,7 @@ class AES {
     void ExpandKey(const std::vector<uint8_t>& key);
 	void AddRoundKey(std::array<uint8_t, 16>& state, int round);
 	void SubstituteBytes(std::array<uint8_t, 16>& state);
-	void ShiftRows(vector<vector<uint8_t> > &messageBlocks)
+	void ShiftRows(std::array<uint8_t, 16> &messageBlocks);
 	void InverseSubstituteBytes(std::array<uint8_t, 16>& state);
 	void InverseShiftRows(std::array<uint8_t, 16>& state);
 
@@ -83,4 +83,4 @@ class AES {
 };
 
 
-#endif AES_H
+#endif AES_H_

@@ -151,7 +151,6 @@ encrypt data using aes-128
 
 vector<uint8_t> AES::Encrypt(const std::vector<uint8_t>& defaulttext) {
     
-    
     std::array<uint8_t, 16> state; // state of the default data
     std::vector<uint8_t> ciphertext; // storage for the encryption result
 
@@ -215,5 +214,5 @@ vector<uint8_t> AES::Decrypt(const std::vector<uint8_t>& cipher) {
         text.push_back(state[i]);
     }
 
-    return text;
+    return text; // returns the decrypted text
 }
