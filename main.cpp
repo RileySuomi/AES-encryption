@@ -23,15 +23,17 @@ string GetFilePath() {
 
     string file;
     cout << "Enter file path: ";
-    getline(cin, file);
+    cin >> file;
+    cout << "Debug: File path entered: " << file << endl;
     return file;
 }
 
 // need file contents as a vector in order to encrypt or decrypt
 vector<unsigned char>GetContents(string filePath) {
+
     ifstream file(filePath, ios::binary); // open in binary
 
-    if (!file) {
+    if(!file.is_open()) {
         std::cerr << "error opening file: " << filePath << endl;
         vector<unsigned char> empty;
         return empty;
@@ -46,10 +48,12 @@ vector<unsigned char>GetContents(string filePath) {
     return file_data; 
 }
 
-void WriteToFile(const string& file_path, const vector<unsigned char>& processed) {
+void WriteToFile(string file_path, const vector<unsigned char>processed) {
+    
     ofstream outFile(file_path, ios::out | ios::binary);
+
     if (!outFile.is_open()) {
-        cerr << "Failed to open file for writing\n";
+        cerr << "Failed to open file for writing" << endl;
         return;
     }
 
@@ -60,13 +64,35 @@ void WriteToFile(const string& file_path, const vector<unsigned char>& processed
     cout << "Process success! File written to " << file_path << "\n";
 }
 
-void Encryption(AES& aes, const string& file_path, const vector<unsigned char>& data) {
+// Generate a new file name by appending a prefix
+// filesystem is broken on my version of c++
+string GenerateNewFileName(const string& originalFilePath, const string& prefix) {
+    size_t lastSlashPos = originalFilePath.find_last_of("/\\");
+    string directory;
+    string filename;
+
+    if (lastSlashPos != string::npos) {
+        directory = originalFilePath.substr(0, lastSlashPos + 1);
+        filename = originalFilePath.substr(lastSlashPos + 1);
+    } else {
+        directory = "";
+        filename = originalFilePath;
+    }
+
+    size_t lastDotPos = filename.find_last_of(".");
+    string stem = filename.substr(0, lastDotPos);
+    string extension = (lastDotPos != string::npos) ? filename.substr(lastDotPos) : "";
+
+    return directory + prefix + stem + extension;
+}
+
+void Encryption(AES& aes, string file_path, const vector<unsigned char> data) {
     try {
         // Encrypt the desired txt file
         vector<unsigned char> encrypted = aes.Encrypt(data);
 
         // Create a new file name for the encrypted file
-        string newFile = "encryptedfile_" + file_path + ".txt";
+        string newFile = GenerateNewFileName(file_path, "encrypted_");
         WriteToFile(newFile, encrypted);
     } 
     catch (const exception& e) {
@@ -75,13 +101,13 @@ void Encryption(AES& aes, const string& file_path, const vector<unsigned char>& 
     }
 }
 
-void Decryption(AES& aes, const string& file_path, const vector<unsigned char>& data) {
+void Decryption(AES& aes, string file_path, const vector<unsigned char> data) {
     try {
         // Decrypt the desired txt file
         vector<unsigned char> decrypted = aes.Decrypt(data);
 
         // Create a new file name for the decrypted file
-        string newFile = "decryptedfile_" + file_path + ".txt";
+        string newFile = GenerateNewFileName(file_path, "decrypted_");
         WriteToFile(newFile, decrypted);
     } 
     catch (const exception& e) {
@@ -105,8 +131,12 @@ int main() {
             case 'e': {
             string file = GetFilePath();
             vector<unsigned char>data = GetContents(file);
+            if (data.empty()) {
+                cout << "we empy?" << endl;
+                return 0;
+            }
             Encryption(aes, file, data);
-            cout << "/n";
+            cout << "\n";
             break;
             }
 
@@ -114,7 +144,7 @@ int main() {
             string file = GetFilePath();
             vector<unsigned char>data = GetContents(file);
             Decryption(aes, file, data);
-            cout << "/n";
+            cout << "\n";
             break;
             }
         }
