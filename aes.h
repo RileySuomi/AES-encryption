@@ -83,9 +83,4 @@ class AES {
 };
 
 
-
-
-
-
-
 #endif AES_H
