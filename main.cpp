@@ -38,7 +38,7 @@ void subBytesHelper(vector<uint8_t> &input) {
             byte from the sub box
         */
         
-        input[i] = sbox[i];
+        input[i] = sbox[input[i]];
     }
 }
 
@@ -52,8 +52,51 @@ void subBytes(vector<vector<uint8_t> > &messageBlock) {
     }
 }
 
+/*
+        Shifting rules for state array
+        First row no shifting
+        Second row 1 byte circular left shift
+        Third row 2 byte circular left shift
+        Fourth row 3 byte circlar left shift
+    */
+void shiftRows(vector<vector<uint8_t> > &messageBlocks) {
 
-uint8_t shiftRows(uint8_t input) {
+    /*
+        Iterate through each state array (16 byte block)
+    */
+   for (int i = 0; i < messageBlocks.size(); i++) {
+        
+       vector<uint8_t> currentBlock = messageBlocks[i];
+
+        /*
+            Start 2nd row shift by collecting 2nd row values
+        */
+       uint8_t firstValue = currentBlock[7];
+       currentBlock[7] = currentBlock[4];
+       currentBlock[4] = currentBlock[5];
+       currentBlock[5] = currentBlock[6];
+       currentBlock[6] = firstValue;
+
+       /*
+            Next, do third row shifts.
+       */
+       firstValue = currentBlock[8];
+       uint8_t secondValue = currentBlock[9];
+       currentBlock[8] = currentBlock[10];
+       currentBlock[9] = currentBlock[11];
+       currentBlock[10] = firstValue;
+       currentBlock[11] = secondValue;
+        
+        /*
+            Last, do fourth row shifts.
+       */
+      firstValue = currentBlock[15];
+      currentBlock[15] = currentBlock[14];
+      currentBlock[14] = currentBlock[13];
+      currentBlock[13] = currentBlock[12];
+      currentBlock[12] = firstValue;
+   }
+
 }
 
 uint8_t mixColumns(uint8_t input) {
@@ -98,8 +141,8 @@ int main() {
     createBlocks(messageBlocks, message);
 
     subBytes(messageBlocks);
-    
-
+    cout << "test" << std::endl;
+    shiftRows(messageBlocks);
     // vector<uint8_t> test = messageBlocks.pop();
     // cout << test << std::endl;
     cout << "test" << std::endl;
