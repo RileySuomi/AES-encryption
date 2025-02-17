@@ -9,16 +9,18 @@
 using namespace std;
 
 // menu display for user input
-void DisplayMenu() {
-    
-    printf("Choose a command");
-    printf("Encrypt = e");
-    printf("Descrypt = d");
-    printf("Quit = q");
+void DisplayMenu() {  
+    printf("Choose a command\n");
+    printf("Encrypt = e\n");
+    printf("Descrypt = d\n");
+    printf("Quit = q\n");
+    printf("Your choice: ");
 }
 
 // ask user for file path 
 string GetFilePath() {
+
+
     string file;
     cout << "Enter file path: ";
     getline(cin, file);
