@@ -2,10 +2,11 @@
 #include <string>
 #include <random>
 #include <array>
+#include <vector>
 #include <stdlib.h>
 #include <stdint.h>
 #include <queue>
-
+#include <cstdint>
 
 using namespace std;
 
@@ -23,23 +24,34 @@ uint8_t generateKey(uint8_t input) {
     
 }
 
-// uint8_t applyRoundKey(uint8_t input) {
-//     uint8_t key = newKey();
-// }
 
-uint8_t subBytes(uint8_t input[4][4]) {
-    for (int i = 0; i < 4; i++) {
-        for (int j = 0; j < 4; j++) {
+/*
+    This function does byte substitution for one 
+    16 byte block.
+*/
 
-            /*
-                Substitute each input byte using a corresponding
-                byte from the sub box
-            */
-            
-            input[i][j] = sbox[input[i][j]];
-        }
+void subBytesHelper(vector<uint8_t> &input) {
+    for (int i = 0; i < 16; i++) {
+        
+        /*
+            Substitute each input byte using a corresponding
+            byte from the sub box
+        */
+        
+        input[i] = sbox[i];
     }
 }
+
+void subBytes(vector<vector<uint8_t> > &messageBlock) {
+    
+    
+    for (int i = 0; i < messageBlock.size(); i++) {
+        
+        subBytesHelper(messageBlock[i]);
+        
+    }
+}
+
 
 uint8_t shiftRows(uint8_t input) {
 }
@@ -77,43 +89,17 @@ void createBlocks(vector<vector<uint8_t> > &blockQueue, string input) {
     }    
 }
 
-
-/*
-    Helper function places each byte in a block into a 4x4 matrix
-    to prep it for the bytesub step. 
-*/
-void blockToMatrix(vector<vector<uint8_t>> block,  uint8_t output[4][4]) {
-
-    /*
-        Iterate through each block
-    */
-    for (int i = 0; i < block.size(); i++) {
-        /*
-            Iterate through every byte in each block
-        */
-       vector<uint8_t> currentBlock = block[i];
-        
-        for (int j = 0; j < 16; j++) {
-            int x = i / 4;
-            int y = j % 4;
-
-            output[x][y] = currentBlock[j];
-        }
-    }
-
-    cout << "test" << std::endl;
-
-}
-
-
 int main() {
     // dummy string for testing change to file io later
     string message = "Born in Seattle, Washington, Hendrix began playing guitar at age 15. In 1961, he enlisted in the US Army, but was discharged the following year. Soon afterward, he moved to Clarksville, then Nashville, Tennessee, and began playing gigs on the chitlin' circuit, earning a place in the Isley Brothers' backing band and later with Little Richard, with whom he continued to work through mid-1965. He then played with Curtis Knight and the Squires.";
-    uint8_t blockBytes[4][4];
+    
     vector<vector<uint8_t> > messageBlocks;
     
     createBlocks(messageBlocks, message);
-    blockToMatrix(messageBlocks, blockBytes);
+
+    subBytes(messageBlocks);
+    
+
     // vector<uint8_t> test = messageBlocks.pop();
     // cout << test << std::endl;
     cout << "test" << std::endl;
