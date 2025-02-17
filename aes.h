@@ -23,7 +23,7 @@ class AES {
     void ExpandKey(const std::vector<uint8_t>& key);
 	void AddRoundKey(std::array<uint8_t, 16>& state, int round);
 	void SubstituteBytes(std::array<uint8_t, 16>& state);
-	void ShiftRows(std::array<uint8_t, 16>& state);
+	void ShiftRows(vector<vector<uint8_t> > &messageBlocks)
 	void InverseSubstituteBytes(std::array<uint8_t, 16>& state);
 	void InverseShiftRows(std::array<uint8_t, 16>& state);
 

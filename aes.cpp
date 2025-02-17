@@ -70,7 +70,7 @@ void AES::AddRoundKey(std::array<uint8_t, 16>& state, int round) {
     }
 }
 
-// Sbox subsitution method
+// Sbox substitution method
 void AES::SubstituteBytes(std::array<uint8_t, 16>& state) {
     for (int i = 0; i < 16; ++i) {
         // sub the byte with the value from the Sbox
@@ -79,6 +79,141 @@ void AES::SubstituteBytes(std::array<uint8_t, 16>& state) {
     }
 }
 
+    /*
+        Shifting rules for state array
+        First row no shifting
+        Second row 1 byte circular left shift
+        Third row 2 byte circular left shift
+        Fourth row 3 byte circlar left shift
+    */
 
-void AES::ShiftRows(std::array<uint8_t, 16>& state) {
+void AES::ShiftRows(std::array<uint8_t, 16> &block) {
+
+    // Temporary copy of the state for manipulation
+    std::array<uint8_t, 16> tmp = block;
+
+    // 1st row (row 0) remains unchanged. Dont SHIFT
+
+    // 2nd row (row 1) left shift by 1 byte
+    block[1] = tmp[5];
+    block[5] = tmp[9];
+    block[9] = tmp[13];
+    block[13] = tmp[1];
+
+    // 3rd row (row 2) left shift by 2 bytes
+    block[2] = tmp[10];
+    block[6] = tmp[14];
+    block[10] = tmp[2];
+    block[14] = tmp[6];
+
+    // 4th row (row 3) left shift by 3 bytes
+    block[3] = tmp[15];
+    block[7] = tmp[3];
+    block[11] = tmp[7];
+    block[15] = tmp[11];
+}
+
+// Inverse Sbox method
+void AES::InverseSubstituteBytes(std::array<uint8_t, 16>& state) {
+    for (int i = 0; i < 16; ++i) {
+        state[i] = inverse_sbox[state[i]];
+    }
+}
+
+// shift the rows back to original / where they were before
+void InverseShiftRows(std::array<uint8_t, 16>& block) {
+    array<uint8_t, 16> tmp = block;
+    
+	// Do not shift Row 0!
+
+    // Row 1 shifts right by 1: 
+    block[5] = tmp[1];
+    block[9] = tmp[5];
+    block[13] = tmp[9];
+    block[1] = tmp[13];
+
+    // Row 2 shifts right by 2: 
+    block[10] = tmp[2];
+    block[14] = tmp[6];
+    block[2] = tmp[10];
+    block[6] = tmp[14];
+
+    // Row 3 shifts right by 3: 
+    block[15] = tmp[3];
+    block[3] = tmp[7];
+    block[7] = tmp[11];
+    block[11] = tmp[15];
+}
+
+/*
+encrypt data using aes-128
+*/
+
+vector<uint8_t> AES::Encrypt(const std::vector<uint8_t>& defaulttext) {
+    
+    
+    std::array<uint8_t, 16> state; // state of the default data
+    std::vector<uint8_t> ciphertext; // storage for the encryption result
+
+
+    // Copy the text to state array
+    for (int i = 0; i < 16; ++i) {
+        state[i] = defaulttext[i];
+    }
+
+    // Initial round key addition
+    AddRoundKey(state, 0);
+
+    // Main rounds (Nr - 1 rounds)
+    for (int round = 1; round < Nr; ++round) {
+        SubstituteBytes(state);
+        ShiftRows(state);
+        AddRoundKey(state, round);
+    }
+
+    // Final round 
+    SubstituteBytes(state);
+    ShiftRows(state);
+    AddRoundKey(state, Nr);
+
+    // Copy state array to ciphertext
+    for (int i = 0; i < 16; ++i) {
+        ciphertext.push_back(state[i]); // adding the encryption to the vector
+    }
+
+    // ciphertext should now hold the result of the encrypted message 
+    return ciphertext;
+}
+
+vector<uint8_t> AES::Decrypt(const std::vector<uint8_t>& cipher) {
+    
+    std::array<uint8_t, 16> state; // state of the cipher data
+    std::vector<uint8_t> text; // storage for turning the cipher into normal text
+
+    // Copy ciphertext to state array
+    for (int i = 0; i < 16; ++i) {
+        state[i] = cipher[i];
+    }
+
+    // Initial round key addition
+    AddRoundKey(state, Nr);
+
+    // Main rounds (Nr - 1 rounds)
+    for (int round = Nr - 1; round > 0; --round) {
+        InverseShiftRows(state);
+        InverseSubstituteBytes(state);
+        AddRoundKey(state, round);
+    }
+
+    // Final round
+    InverseShiftRows(state);
+    InverseSubstituteBytes(state);
+    AddRoundKey(state, 0);
+
+    // Copy state array to normal text
+    for (int i = 0; i < 16; ++i) {
+        text.push_back(state[i]);
+    }
+
+    return text;
 }
