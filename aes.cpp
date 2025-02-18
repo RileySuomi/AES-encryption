@@ -294,7 +294,7 @@ vector<uint8_t> AES::Decrypt(const std::vector<uint8_t>& cipher) {
        
        RemovePadding(state,size);
 
-       cout << "error happens here?" << endl;
+       
         // Copy state array to ciphertext
         for (int i = 0; i < size; ++i) {
             text.push_back(state[i]); // adding the encryption to the vector
