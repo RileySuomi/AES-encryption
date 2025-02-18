@@ -192,70 +192,182 @@ void AES::InverseShiftRows(std::array<uint8_t, 16>& block) {
 encrypt data using aes-128
 */
 
-vector<uint8_t> AES::Encrypt(const std::vector<uint8_t>& defaulttext) {
+// vector<uint8_t> AES::Encrypt(const std::vector<uint8_t>& defaulttext) {
     
-    std::array<uint8_t, 16> state; // state of the default data
-    std::vector<uint8_t> ciphertext; // storage for the encryption result
+//     std::array<uint8_t, 16> state; // state of the default data 16 bytes
+//     std::vector<uint8_t> ciphertext; // storage for the encryption result //?
 
 
-    // Copy the text to state array
-    for (int i = 0; i < 16; ++i) {
-        state[i] = defaulttext[i];
-    }
+//     // Copy the text to state array
+//     for (int i = 0; i < 16; ++i) {
+//         state[i] = defaulttext[i]; //one block
+//     }
 
-    // Initial round key addition
-    AddRoundKey(state, 0);
+//     // Initial round key addition
+//     AddRoundKey(state, 0);
 
-    // Main rounds (Nr - 1 rounds)
-    for (int round = 1; round < Nr; ++round) {
-        SubstituteBytes(state);
-        ShiftRows(state);
-        AddRoundKey(state, round);
-    }
+//     // Main rounds (Nr - 1 rounds)
+//     for (int round = 1; round < Nr; ++round) {
+//         SubstituteBytes(state);
+//         ShiftRows(state);
+//         AddRoundKey(state, round);
+//     }
 
-    // Final round 
-    SubstituteBytes(state);
-    ShiftRows(state);
-    AddRoundKey(state, Nr);
+//     // Final round 
+//     SubstituteBytes(state);
+//     ShiftRows(state);
+//     AddRoundKey(state, Nr);
 
-    // Copy state array to ciphertext
-    for (int i = 0; i < 16; ++i) {
-        ciphertext.push_back(state[i]); // adding the encryption to the vector
-    }
+//     // Copy state array to ciphertext
+//     for (int i = 0; i < 16; ++i) {
+//         ciphertext.push_back(state[i]); // adding the encryption to the vector
+//     }
 
-    // ciphertext should now hold the result of the encrypted message 
-    return ciphertext;
-}
+//     // ciphertext should now hold the result of the encrypted message 
+//     return ciphertext;
+// }
+
+// vector<uint8_t> AES::Decrypt(const std::vector<uint8_t>& cipher) {
+    
+//     std::array<uint8_t, 16> state; // state of the cipher data
+//     std::vector<uint8_t> text; // storage for turning the cipher into normal text
+
+//     // Copy ciphertext to state array
+//     for (int i = 0; i < 16; ++i) {
+//         state[i] = cipher[i];
+//     }
+
+//     // Initial round key addition
+//     AddRoundKey(state, Nr);
+
+//     // Main rounds (Nr - 1 rounds)
+//     for (int round = Nr - 1; round > 0; --round) {
+//         InverseShiftRows(state);
+//         InverseSubstituteBytes(state);
+//         AddRoundKey(state, round);
+//     }
+
+//     // Final round
+//     InverseShiftRows(state);
+//     InverseSubstituteBytes(state);
+//     AddRoundKey(state, 0);
+
+//     // Copy state array to normal text
+//     for (int i = 0; i < 16; ++i) {
+//         text.push_back(state[i]);
+//     }
+
+//     return text; // returns the decrypted text
+// }
 
 vector<uint8_t> AES::Decrypt(const std::vector<uint8_t>& cipher) {
     
-    std::array<uint8_t, 16> state; // state of the cipher data
-    std::vector<uint8_t> text; // storage for turning the cipher into normal text
+    std::array<uint8_t, 16> state = {}; // state of the default data 16 bytes // needs to be one block of data. 
+    std::vector<uint8_t> text; 
+    std::vector<vector<uint8_t> > blockqueue;
+    int size = 0; 
 
-    // Copy ciphertext to state array
-    for (int i = 0; i < 16; ++i) {
-        state[i] = cipher[i];
-    }
+  
+    createBlocks(blockqueue, cipher);
+   
+    for(std::vector<uint8_t> block : blockqueue){
+        for(int i = 0; i < block.size(); i++){
+            state[i] = block.at(i);
+            size++;
+        }
+        AddRoundKey(state, Nr);
 
-    // Initial round key addition
-    AddRoundKey(state, Nr);
-
-    // Main rounds (Nr - 1 rounds)
-    for (int round = Nr - 1; round > 0; --round) {
+        // Main rounds (Nr - 1 rounds)
+        for (int round = Nr-1; round >0 ; --round) {
+            InverseShiftRows(state);
+            InverseSubstituteBytes(state);
+            AddRoundKey(state, round);
+        }
+    
+        // Final round 
+        
         InverseShiftRows(state);
         InverseSubstituteBytes(state);
-        AddRoundKey(state, round);
+        AddRoundKey(state, 0);
+    
+        // Copy state array to ciphertext
+        for (int i = 0; i < size; ++i) {
+            text.push_back(state[i]); // adding the encryption to the vector
+        }
+
+        size = 0;
+        // ciphertext should now hold the result of the encrypted message or current block
+        //now i should do what? return the whole ciphertext? 
+        
+        
     }
-
-    // Final round
-    InverseShiftRows(state);
-    InverseSubstituteBytes(state);
-    AddRoundKey(state, 0);
-
-    // Copy state array to normal text
-    for (int i = 0; i < 16; ++i) {
-        text.push_back(state[i]);
-    }
-
     return text; // returns the decrypted text
+}
+
+void AES::createBlocks(std::vector<vector<uint8_t> > &blockQueue, const std::vector<uint8_t>& input) {
+    size_t i;
+    vector<uint8_t> temp; 
+    for( i = 0; i < input.size(); i++){
+        if(i != 0 && i % 16 == 0){
+        //push into queue
+            blockQueue.push_back(temp);
+            temp.clear();
+        }
+        temp.push_back(input.at(i));
+    }
+
+    if(!temp.empty()){
+        while(temp.size() < 16){
+            temp.push_back(0);
+        }
+        blockQueue.push_back(temp);
+    }
+
+
+}
+
+vector<uint8_t> AES::Encrypt(const std::vector<uint8_t>& defaulttext) {
+    std::array<uint8_t, 16> state ={}; // state of the default data 16 bytes // needs to be one block of data. 
+    std::vector<uint8_t> ciphertext; 
+    std::vector<vector<uint8_t> > blockqueue;
+    int size = 0;
+    
+
+    createBlocks(blockqueue, defaulttext);
+   
+    for(std::vector<uint8_t> block : blockqueue){
+        for(int i = 0; i < block.size(); i++){
+            state[i] = block.at(i);
+            size++;
+        }
+        AddRoundKey(state, 0);
+
+        // Main rounds (Nr - 1 rounds)
+        for (int round = 1; round < Nr; ++round) {
+            SubstituteBytes(state);
+            ShiftRows(state);
+            AddRoundKey(state, round);
+        }
+    
+        // Final round 
+        SubstituteBytes(state);
+        ShiftRows(state);
+        AddRoundKey(state, Nr);
+    
+        // Copy state array to ciphertext
+        
+        for (int i = 0; i < size; ++i) {
+            ciphertext.push_back(state[i]); // adding the encryption to the vector
+        }
+        size = 0;
+        // ciphertext should now hold the result of the encrypted message or current block
+        //now i should do what? return the whole ciphertext? 
+        
+        
+    }
+
+    
+
+
+    return ciphertext;
 }

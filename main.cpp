@@ -33,11 +33,11 @@ vector<unsigned char>GetContents(string filePath) {
     ifstream file(filePath, ios::binary); // open in binary
 
     if(!file.is_open()) {
-        std::cerr << "error opening file: " << filePath << endl;
+        std::cerr << "error opening file: " << filePath << endl << endl;
         vector<unsigned char> empty;
         return empty;
     }
-
+    printf("Success file opened!\n");
     vector<unsigned char> file_data(
         (istreambuf_iterator<char>(file)), 
         istreambuf_iterator<char>()
@@ -132,7 +132,7 @@ int main() {
             vector<unsigned char>data = GetContents(file);
             if (data.empty()) {
                 cout << "we empy?" << endl;
-                return 0;
+                continue;
             }
             Encryption(aes, file, data);
             cout << "\n";
@@ -142,6 +142,10 @@ int main() {
             case 'd': {
             string file = GetFilePath();
             vector<unsigned char>data = GetContents(file);
+            if(data.empty()){
+                cout<<"stop" << endl;
+                continue;
+            }
             Decryption(aes, file, data);
             cout << "\n";
             break;

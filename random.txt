@@ -1,0 +1,19 @@
+void createBlocks(vector<vector<uint8_t> > &blockQueue, string input) {
+    const int blockSize = 16;
+    int blockStart = 0;
+    cout << input.substr(16,31) << std::endl;
+ 
+    for (int i = 0; i < input.length(); i++) {
+        /*
+            If we are at the end of a 16 byte sequence or at the end of 
+            the message, create a block and push it.
+        */
+       int diff = i - blockStart;
+        if (i - blockStart == blockSize - 1 || i == input.length() - 1) {
+            string currentBlock = input.substr(blockStart, blockSize);
+            blockQueue.push_back(vector<uint8_t>(currentBlock.begin(), currentBlock.end()));
+            cout << i - blockStart << std::endl;
+            blockStart = i + 1;
+        }
+    }    
+}
