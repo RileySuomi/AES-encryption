@@ -269,7 +269,7 @@ vector<uint8_t> AES::Decrypt(const std::vector<uint8_t>& cipher) {
 
   
     createBlocks(blockqueue, cipher);
-   
+   cout << blockqueue.size() << endl;
     for(std::vector<uint8_t> block : blockqueue){
         for(int i = 0; i < block.size(); i++){
             state[i] = block.at(i);
@@ -289,7 +289,12 @@ vector<uint8_t> AES::Decrypt(const std::vector<uint8_t>& cipher) {
         InverseShiftRows(state);
         InverseSubstituteBytes(state);
         AddRoundKey(state, 0);
-    
+        //if final block remove padding
+       // RemovePadding(state);
+       
+       RemovePadding(state,size);
+
+       cout << "error happens here?" << endl;
         // Copy state array to ciphertext
         for (int i = 0; i < size; ++i) {
             text.push_back(state[i]); // adding the encryption to the vector
@@ -303,6 +308,26 @@ vector<uint8_t> AES::Decrypt(const std::vector<uint8_t>& cipher) {
     }
     return text; // returns the decrypted text
 }
+void AES::RemovePadding(std::array<uint8_t, 16>& block,int& size){
+    if(size == 0) return;
+    uint8_t padding = block[size-1];
+    
+    if(padding <= size){
+        size = size -padding; 
+        return;
+    }
+
+};
+
+void AES::AddPadding(std::vector<uint8_t>& block){
+    
+    uint8_t paddingSize = 16-block.size();
+
+    block.resize(16,paddingSize);
+    return;
+
+    
+};
 
 void AES::createBlocks(std::vector<vector<uint8_t> > &blockQueue, const std::vector<uint8_t>& input) {
     size_t i;
@@ -316,13 +341,29 @@ void AES::createBlocks(std::vector<vector<uint8_t> > &blockQueue, const std::vec
         temp.push_back(input.at(i));
     }
 
-    if(!temp.empty()){
-        while(temp.size() < 16){
-            temp.push_back(0);
+    if(!input.empty()) blockQueue.push_back(temp);
+
+
+
+}
+void AES::createBlocksEncrypt(std::vector<vector<uint8_t> > &blockQueue, const std::vector<uint8_t>& input) {
+    size_t i;
+    vector<uint8_t> temp; 
+    for( i = 0; i < input.size(); i++){
+        if(i != 0 && i % 16 == 0){
+        //push into queue
+            blockQueue.push_back(temp);
+            temp.clear();
         }
-        blockQueue.push_back(temp);
+        temp.push_back(input.at(i));
     }
 
+///wont matter for decrypt because it will never be empty!
+    
+    AddPadding(temp);
+    blockQueue.push_back(temp); //pushes whatever is there 
+    
+//adds padding no matter what. 
 
 }
 
@@ -333,7 +374,7 @@ vector<uint8_t> AES::Encrypt(const std::vector<uint8_t>& defaulttext) {
     int size = 0;
     
 
-    createBlocks(blockqueue, defaulttext);
+    createBlocksEncrypt(blockqueue, defaulttext);
    
     for(std::vector<uint8_t> block : blockqueue){
         for(int i = 0; i < block.size(); i++){
@@ -354,9 +395,9 @@ vector<uint8_t> AES::Encrypt(const std::vector<uint8_t>& defaulttext) {
         ShiftRows(state);
         AddRoundKey(state, Nr);
     
-        // Copy state array to ciphertext
+       
         
-        for (int i = 0; i < size; ++i) {
+        for (int i = 0; i < 16; ++i) {
             ciphertext.push_back(state[i]); // adding the encryption to the vector
         }
         size = 0;

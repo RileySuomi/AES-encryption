@@ -26,6 +26,9 @@ class AES {
 	void ShiftRows(std::array<uint8_t, 16> &messageBlocks);
 	void InverseSubstituteBytes(std::array<uint8_t, 16>& state);
 	void InverseShiftRows(std::array<uint8_t, 16>& state);
+    void createBlocksEncrypt(std::vector<vector<uint8_t> > &blockQueue, const std::vector<uint8_t>& input);
+    void RemovePadding(std::array<uint8_t, 16>& block,int& size);
+    void AddPadding(std::vector<uint8_t>& block);
     void createBlocks(std::vector<vector<uint8_t> > &blockQueue, const std::vector<uint8_t>& input);
     /*
     The S-Box is a constant table of values that AES uses (Rijndael)
